@@ -7,9 +7,9 @@
     <style>
         /* PALETA DE COLORES Y ESTILOS BASE */
         :root {
-            --verde-oscuro: #6aa824; /* Verde un poco más marcado para que el texto blanco se lea bien en el menú superior */
-            --verde-fuerte: #8dc63f; /* El verde vibrante y claro exacto del fondo de tu imagen */
-            --verde-acento: #a8d85f; /* Un verde más suave para los precios y acentos */
+            --verde-oscuro: #6aa824;
+            --verde-fuerte: #8dc63f;
+            --verde-acento: #a8d85f;
             --blanco-fondo: #f4f6f4; 
             --texto-oscuro: #1a1a1a;
             --whatsapp: #25D366; 
@@ -25,7 +25,7 @@
         header {
             background-image: linear-gradient(to bottom, var(--verde-oscuro), var(--verde-fuerte));
             color: white; 
-            padding: 1.5rem 1rem; /* Aumentado ligeramente para el logo grande */
+            padding: 1.5rem 1rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             display: flex; justify-content: center; align-items: center;
         }
@@ -38,11 +38,10 @@
         
         /* LOGOTIPO ACTUALIZADO: SIN CONTENEDOR Y MÁS GRANDE */
         .logo-tienda { 
-            width: 130px; /* Aumentado significativamente el tamaño */
-            height: auto; /* Mantiene la proporción */
+            width: 130px;
+            height: auto;
             max-height: 130px;
             object-fit: contain; 
-            /* Se eliminaron: background, padding, border-radius, box-shadow */
         }
         
         .texto-header { text-align: center; }
@@ -267,17 +266,46 @@
                     <div id="lista-carrito-visual"></div>
                 </div>
                 
-                <p style="margin-bottom: 12px; color: #555; font-weight: bold; font-size: 0.95rem;">Tu pedido será preparado para recoger en sucursal:</p>
-                
+                <div style="margin-bottom: 15px;">
+                    <h4 style="color: var(--verde-oscuro); font-size: 1rem; margin-bottom: 10px;">Método de Entrega:</h4>
+                    <div style="display: flex; gap: 15px;">
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="metodo-entrega" value="sucursal" checked onchange="toggleEntrega()"> Recoger en sucursal
+                        </label>
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="metodo-entrega" value="domicilio" onchange="toggleEntrega()"> Envío a domicilio
+                        </label>
+                    </div>
+                </div>
+
                 <div id="info-tienda">
+                    <p style="margin-bottom: 8px; color: #555; font-weight: bold; font-size: 0.95rem;">Tu pedido será preparado para recoger en:</p>
                     <p>📍 <strong>Nuestra dirección:</strong> <span id="display-direccion-negocio"></span></p>
                     <button type="button" class="btn-ubicacion" style="margin-bottom:0;" onclick="verUbicacionNegocio()">
                         🗺️ Ver mapa y cómo llegar
                     </button>
                 </div>
+
+                <div id="info-domicilio" style="display: none; background: #e6f2ff; padding: 12px; border-radius: 8px; border: 1px solid var(--azul-mapa); margin-bottom: 12px;">
+                    <p style="font-size: 0.85rem; color: #444; margin-bottom: 8px;">Compra mínima: $<span id="display-minima"></span> | Límite: <span id="display-limite"></span> km.</p>
+                    <p style="font-size: 0.95rem; font-weight: bold; color: var(--verde-oscuro); margin-bottom: 10px;">Costo de envío: ¡Gratis!</p>
+                    
+                    <button type="button" class="btn-ubicacion" style="border-color: var(--whatsapp); color: var(--whatsapp);" onclick="obtenerUbicacionAutomatica()">
+                        📍 Obtener mi ubicación actual por GPS
+                    </button>
+                    <div id="estado-ubicacion" style="font-size: 0.85rem; margin-top: 8px; font-weight: bold; text-align: center;"></div>
+                    <input type="hidden" id="coordenadas-cliente" value="">
+
+                    <div id="detalles-direccion" style="display: none; margin-top: 12px;">
+                        <input type="text" id="calle-numero" placeholder="Calle y Número (Obligatorio)" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                        <input type="text" id="colonia" placeholder="Colonia (Obligatorio)" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                        <input type="text" id="referencias" placeholder="Referencias (ej. portón negro, casa azul)" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                    </div>
+                </div>
+
             </div>
             <div class="modal-footer">
-                <button class="btn-confirmar" style="background-color: var(--whatsapp);" onclick="enviarPedidoWhatsApp()">Enviar pedido por WhatsApp</button>
+                <button class="btn-confirmar" id="btn-enviar-wa" style="background-color: var(--whatsapp);" onclick="enviarPedidoWhatsApp()">Enviar pedido por WhatsApp</button>
             </div>
         </div>
     </div>
@@ -290,6 +318,13 @@
         
         const DIRECCION_NEGOCIO_TEXTO = "Blvd. San Pedro 522, San Isidro, 37685 León de los Aldama, Gto."; 
         document.getElementById('display-direccion-negocio').innerText = DIRECCION_NEGOCIO_TEXTO;
+
+        // CONFIGURACIÓN DE ENVÍO
+        const COMPRA_MINIMA = 80; // Cambia este número por tu compra mínima
+        const LIMITE_ENVIO_KM = .5; // Cambia este número por tu límite de distancia
+        
+        document.getElementById('display-minima').innerText = COMPRA_MINIMA;
+        document.getElementById('display-limite').innerText = LIMITE_ENVIO_KM;
 
         const platillos = [
             
@@ -306,7 +341,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                      {nombre: "Queso Extra +5",precio: 5},
@@ -329,7 +364,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                     {nombre: "Queso Extra +5",precio: 5},
@@ -348,11 +383,11 @@
                 imagen: "img/deli.png", 
                 ingredientesBase: [
                     "Jicama", "Pepino", "Piña","Jitomate","Cebolla","Cilantro", "Clamato", "Jugo Maggie", "Sal de Ajo", "Polvo de Camaron","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso","Camarones",
-                   { nombre: "Cacahuates", opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                   { nombre: "Cacahuates", opciones: ["HotNuts",  "Japones", ] },
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                       {nombre: "Queso Extra +5",precio: 5},
@@ -375,7 +410,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                       {nombre: "Queso Extra +5",precio: 5},
@@ -389,16 +424,16 @@
                 id: 5, 
                 nombre: "Mar Y Tierra",
                 descripcion: "Disfruta de una mezcla de Jícama y pepino picado con jitomate cilantro clamato (cuerito y camarones seco) cebolla sal salsa chile limones vinagre y queso al gusto.",
-               precios: { "Mediano (Medio)": 75, "Grande (Litro)": 105 },
+                precios: { "Mediano (Medio)": 75, "Grande (Litro)": 105 },
                 categoria: "especialidad",
                 imagen: "img/mar.png", 
                 ingredientesBase: [
                     "Jicama", "Pepino", "Piña","Jitomate","Cebolla","Cilantro", "Clamato", "Jugo Maggie", "Polvo de camaron", "Sal de Ajo", "Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso","Camarones","Cueritos",
-                   
+                    
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                      {nombre: "Queso Extra +5",precio: 5},
@@ -420,11 +455,11 @@
                     
                     { nombre: "Relleno",  opciones: ["Piña","Camaron seco", "Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados",] },
 
-                   
+                    
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                      {nombre: "Queso Extra +5",precio: 5},
@@ -444,11 +479,11 @@
                 ingredientesBase: [
                     "Jicama", "Pepino", "Piña","Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Queso",
                     
-                   
+                    
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                    {nombre: "Queso Extra +5",precio: 5},
@@ -468,12 +503,12 @@
                 ingredientesBase: [
                     "Jicama", "Pepino","Jitomate","Cebolla","Cilantro", "Clamato", "Jugo Maggie", "Sal de Ajo", "Polvo de Camaron","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso","Camarones","Cueritos",
                     { nombre: "Papas", opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
-                   
+                    { nombre: "Cacahuates", opciones: ["HotNuts",  "Japones", ] },
+                    
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                       {nombre: "Queso Extra +5",precio: 5},
@@ -493,11 +528,11 @@
                 ingredientesBase: [
                     "Jicama", "Pepino","Cebolla","Salsa de botella","Limon","Sal","Chile Picoso","Chile no Picoso","Queso",
                     { nombre: "Papas", opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                   
+                    
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                      {nombre: "Queso Extra +5",precio: 5},
@@ -507,7 +542,7 @@
                 ]
             },
 
-           
+            
             {
                 id: 11, 
                 nombre: "Caldo de Oso",
@@ -521,7 +556,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                       {nombre: "Queso Extra +5",precio: 5},
@@ -544,7 +579,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones:["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                      {nombre: "Queso Extra +5",precio: 5},
@@ -567,7 +602,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                     {nombre: "Queso Extra +5",precio: 5},
@@ -590,7 +625,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                      {nombre: "Queso Extra +5",precio: 5},
@@ -613,7 +648,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                      {nombre: "Queso Extra +5",precio: 5},
@@ -638,7 +673,7 @@
                 ],
                ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                     {nombre: "Queso Extra +5",precio: 5},
@@ -661,7 +696,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                     {nombre: "Queso Extra +5",precio: 5},
@@ -683,7 +718,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                       {nombre: "Queso Extra +5",precio: 5},
@@ -706,7 +741,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                    {nombre: "Queso Extra +5",precio: 5},
@@ -728,7 +763,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                      {nombre: "Queso Extra +5",precio: 5},
@@ -751,8 +786,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
-                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Cueritos", precio: 10 },
                      {nombre: "Queso Extra +5",precio: 5},
                     {nombre: "Queso Extra +10",precio: 10},
@@ -774,7 +808,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                     {nombre: "Queso Extra +5",precio: 5},
@@ -796,7 +830,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                    {nombre: "Queso Extra +5",precio: 5},
@@ -818,7 +852,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                     {nombre: "Queso Extra +5",precio: 5},
@@ -841,7 +875,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                     {nombre: "Queso Extra +5",precio: 5},
@@ -861,11 +895,11 @@
                 ingredientesBase: [
                     "Jicama", "Pepino","Salsa de botella","Cebolla fileteada", "Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
                 { nombre: "Papas",  opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates",  opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates",  opciones: ["HotNuts",  "Japones", ] },
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                    {nombre: "Queso Extra +5",precio: 5},
@@ -875,7 +909,7 @@
                 ]
             },
 
-            {
+             {
                 id: 28, 
                 nombre: "Espaguetti con Papas",
                 descripcion: "Disfruta de una mezcla fresca de Jicama y/o pepino rallado con cebolla sal limón vinagre chile papas (SABRITAS O BARCEL) y queso al gusto.",
@@ -889,7 +923,7 @@
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                     {nombre: "Queso Extra +5",precio: 5},
@@ -907,13 +941,13 @@
                 categoria: "light",
                 imagen: "img/cacah.png", 
                 ingredientesBase: [
-                    { nombre: "Cacahuates",  opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates",  opciones: ["HotNuts",  "Japones", ] },
                     "Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Salsa de botella","Vinagre","Queso",
                     
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                    {nombre: "Queso Extra +5",precio: 5},
@@ -922,7 +956,7 @@
                 ]
             },
 
-            {
+             {
                 id: 30, 
                 nombre: "Papas Locas",
                 descripcion: "Disfruta de unas papas de tu eleccion cubiertas de Jícama y pepino rallado Limón sal cebolla salsa chile vinagre y queso al gusto .",
@@ -936,7 +970,7 @@
                 ],
                ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                       {nombre: "Queso Extra +5",precio: 5},
@@ -946,7 +980,7 @@
                 ]
             },
 
-            {
+             {
                 id: 31, 
                 nombre: "Vaso Loco",
                 descripcion: "Disfruta de una mezcla de Jícama y pepino rallado con cacahuates de tu elección Chile limón cebolla sal vinagre y queso al gusto.",
@@ -955,12 +989,12 @@
                 imagen: "img/vasol.png", 
                 ingredientesBase: [
                     "Jicama", "Pepino","Salsa de botella","Cebolla fileteada", "Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
- { nombre: "Cacahuates",  opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+ { nombre: "Cacahuates",  opciones: ["HotNuts",  "Japones", ] },
                     
                 ],
                 ingredientesExtra: [
                      { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
-                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts",  "Japones", ] },
                     { nombre: "Camaron seco", precio: 20 },
                     { nombre: "Cueritos", precio: 10 },
                     {nombre: "Queso Extra +5",precio: 5},
@@ -978,7 +1012,7 @@
         const container = document.getElementById('menu-container');
 
         function verUbicacionNegocio() {
-            const url = `https://www.google.com/maps/search/?api=1&query=${LATITUD_NEGOCIO},${LONGITUD_NEGOCIO}`;
+            const url = `https://maps.google.com/?q=${LATITUD_NEGOCIO},${LONGITUD_NEGOCIO}`;
             window.open(url, '_blank');
         }
 
@@ -1194,9 +1228,10 @@
                             <div class="item-carrito-detalles">${detallesHTML}</div>
                         </div>
                         <div class="item-carrito-precio">$${item.precioFinal}</div>
-                        <button class="btn-eliminar" onclick="eliminarDelCarrito(${index})">✖</button>
+                        <button class="btn-eliminar" onclick="eliminarDelCarrito(${index}); validarBotonEnvio();">✖</button>
                     </div>`;
             });
+            validarBotonEnvio(); // Valida si el nuevo total permite envío
         }
 
         function eliminarDelCarrito(index) { pedido.splice(index, 1); actualizarBotonFlotante(); renderizarCarrito(); }
@@ -1208,6 +1243,18 @@
         }
 
         function enviarPedidoWhatsApp() {
+            const metodo = document.querySelector('input[name="metodo-entrega"]:checked').value;
+            
+            // Validaciones finales de inputs si es a domicilio
+            if (metodo === 'domicilio') {
+                const calle = document.getElementById('calle-numero').value.trim();
+                const col = document.getElementById('colonia').value.trim();
+                if(!calle || !col) {
+                    alert("Por favor ingresa tu calle, número y colonia.");
+                    return;
+                }
+            }
+
             let mensaje = "Hola! 👋 Me gustaría ordenar lo siguiente:\n\n";
             let totalPedido = 0;
 
@@ -1221,7 +1268,20 @@
             });
 
             mensaje += `-------------------------------\n`;
-            mensaje += `🏪 *Entrega:* Pasar a recoger en tienda\n`;
+            if (metodo === 'sucursal') {
+                mensaje += `🏪 *Entrega:* Pasar a recoger en tienda\n`;
+            } else {
+                const coords = document.getElementById('coordenadas-cliente').value;
+                const calle = document.getElementById('calle-numero').value.trim();
+                const col = document.getElementById('colonia').value.trim();
+                const ref = document.getElementById('referencias').value.trim();
+                
+                mensaje += `🛵 *Entrega:* Envío a domicilio\n`;
+                mensaje += `📍 *Ubicación GPS:* https://maps.google.com/?q=${coords}\n`;
+                mensaje += `🏠 *Dirección:* ${calle}, ${col}\n`;
+                if(ref) mensaje += `📝 *Referencias:* ${ref}\n`;
+                mensaje += `🚚 *Costo de envío:* ¡Gratis!\n`;
+            }
             mensaje += `-------------------------------\n`;
             mensaje += `*TOTAL A PAGAR: $${totalPedido}*\n\n`;
             mensaje += "Quedo a la espera para confirmar mi orden. ¡Gracias!";
@@ -1232,6 +1292,100 @@
             pedido = [];
             actualizarBotonFlotante();
             cerrarModal('modal-checkout');
+            
+            // Limpiar formulario de domicilio
+            document.getElementById('coordenadas-cliente').value = "";
+            document.getElementById('calle-numero').value = "";
+            document.getElementById('colonia').value = "";
+            document.getElementById('referencias').value = "";
+            document.getElementById('estado-ubicacion').innerText = "";
+            document.getElementById('detalles-direccion').style.display = "none";
+        }
+
+        function toggleEntrega() {
+            const metodo = document.querySelector('input[name="metodo-entrega"]:checked').value;
+            document.getElementById('info-tienda').style.display = metodo === 'sucursal' ? 'block' : 'none';
+            document.getElementById('info-domicilio').style.display = metodo === 'domicilio' ? 'block' : 'none';
+            validarBotonEnvio();
+        }
+
+        function calcularDistanciaEnKm(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radio de la tierra en km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+        }
+
+        function obtenerUbicacionAutomatica() {
+            const estado = document.getElementById('estado-ubicacion');
+            estado.style.color = "var(--texto-oscuro)";
+            estado.innerText = "Buscando ubicación...";
+            
+            if (!navigator.geolocation) {
+                estado.style.color = "var(--rojo-alerta)";
+                estado.innerText = "Tu dispositivo no soporta geolocalización.";
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (posicion) => {
+                    const latCliente = posicion.coords.latitude;
+                    const lonCliente = posicion.coords.longitude;
+                    const distancia = calcularDistanciaEnKm(LATITUD_NEGOCIO, LONGITUD_NEGOCIO, latCliente, lonCliente);
+
+                    if (distancia > LIMITE_ENVIO_KM) {
+                        estado.style.color = "var(--rojo-alerta)";
+                        estado.innerText = `Lo sentimos, estás a ${distancia.toFixed(1)} km. Nuestro límite es ${LIMITE_ENVIO_KM} km.`;
+                        document.getElementById('detalles-direccion').style.display = 'none';
+                        document.getElementById('coordenadas-cliente').value = "";
+                    } else {
+                        estado.style.color = "var(--whatsapp)";
+                        estado.innerText = `¡Estás dentro de la zona! (${distancia.toFixed(1)} km)`;
+                        document.getElementById('coordenadas-cliente').value = `${latCliente},${lonCliente}`;
+                        document.getElementById('detalles-direccion').style.display = 'block';
+                    }
+                    validarBotonEnvio();
+                },
+                (error) => {
+                    estado.style.color = "var(--rojo-alerta)";
+                    estado.innerText = "No pudimos obtener tu ubicación. Por favor acepta los permisos del GPS.";
+                },
+                { enableHighAccuracy: true }
+            );
+        }
+
+        function validarBotonEnvio() {
+            const btn = document.getElementById('btn-enviar-wa');
+            const metodo = document.querySelector('input[name="metodo-entrega"]:checked').value;
+            const totalPedido = pedido.reduce((sum, item) => sum + item.precioFinal, 0);
+
+            if (metodo === 'domicilio') {
+                const coordenadas = document.getElementById('coordenadas-cliente').value;
+                if (totalPedido < COMPRA_MINIMA) {
+                    btn.disabled = true;
+                    btn.innerText = `Faltan $${COMPRA_MINIMA - totalPedido} para envío`;
+                    btn.style.background = "#ccc";
+                    btn.style.cursor = "not-allowed";
+                } else if (!coordenadas) {
+                    btn.disabled = true;
+                    btn.innerText = "Falta obtener ubicación GPS";
+                    btn.style.background = "#ccc";
+                    btn.style.cursor = "not-allowed";
+                } else {
+                    btn.disabled = false;
+                    btn.innerText = "Enviar pedido por WhatsApp";
+                    btn.style.background = "var(--whatsapp)";
+                    btn.style.cursor = "pointer";
+                }
+            } else {
+                btn.disabled = false;
+                btn.innerText = "Enviar pedido por WhatsApp";
+                btn.style.background = "var(--whatsapp)";
+                btn.style.cursor = "pointer";
+            }
         }
 
         mostrarMenu(platillos);
