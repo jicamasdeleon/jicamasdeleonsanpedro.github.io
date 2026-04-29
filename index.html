@@ -1338,7 +1338,7 @@
 
                     if (distancia > LIMITE_ENVIO_KM) {
                         estado.style.color = "var(--rojo-alerta)";
-                        estado.innerText = `Lo sentimos, estás a ${distancia.toFixed(1)} km. Nuestro límite es ${LIMITE_ENVIO_KM} km.`;
+                        estado.innerText = `Lo sentimos, estás a ${distancia.toFixed(1)} km. Nuestro límite es ${LIMITE_ENVIO_KM} km. Estamos trabajando para expadir nuestro radio de entrega`;
                         document.getElementById('detalles-direccion').style.display = 'none';
                         document.getElementById('coordenadas-cliente').value = "";
                     } else {
