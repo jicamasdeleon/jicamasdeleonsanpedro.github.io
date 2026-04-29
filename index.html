@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú Digital - Jicamas de Leon | San Pedro</title>
+    <style>
+        /* PALETA DE COLORES Y ESTILOS BASE */
+        :root {
+            --verde-oscuro: #6aa824; /* Verde un poco más marcado para que el texto blanco se lea bien en el menú superior */
+            --verde-fuerte: #8dc63f; /* El verde vibrante y claro exacto del fondo de tu imagen */
+            --verde-acento: #a8d85f; /* Un verde más suave para los precios y acentos */
+            --blanco-fondo: #f4f6f4; 
+            --texto-oscuro: #1a1a1a;
+            --whatsapp: #25D366; 
+            --gris-claro: #e0e0e0;
+            --rojo-alerta: #ff4c4c;
+            --azul-mapa: #007bff; 
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: var(--blanco-fondo); color: var(--texto-oscuro); padding-bottom: 100px; }
+
+        /* HEADER CON DEGRADADO Y AJUSTE DE ESPACIO */
+        header {
+            background-image: linear-gradient(to bottom, var(--verde-oscuro), var(--verde-fuerte));
+            color: white; 
+            padding: 1.5rem 1rem; /* Aumentado ligeramente para el logo grande */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .header-contenido {
+            display: flex; align-items: center; gap: 15px; flex-wrap: wrap; justify-content: center; width: 100%;
+        }
+
+        .logos-container { display: flex; align-items: center; justify-content: center; }
+        
+        /* LOGOTIPO ACTUALIZADO: SIN CONTENEDOR Y MÁS GRANDE */
+        .logo-tienda { 
+            width: 130px; /* Aumentado significativamente el tamaño */
+            height: auto; /* Mantiene la proporción */
+            max-height: 130px;
+            object-fit: contain; 
+            /* Se eliminaron: background, padding, border-radius, box-shadow */
+        }
+        
+        .texto-header { text-align: center; }
+        .texto-header h1 { font-size: 1.6rem; margin-bottom: 0.1rem; }
+        .texto-header p { font-size: 0.9rem; opacity: 0.9; }
+        
+        .horario-header {
+            font-size: 0.8rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            margin-top: 6px;
+            font-weight: bold;
+        }
+
+        /* FILTROS DESLIZABLES */
+        .filtro-container {
+            position: sticky; top: 0; background: white; padding: 10px 1rem;
+            display: flex; justify-content: flex-start; gap: 8px; z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            overflow-x: auto; 
+            white-space: nowrap; 
+        }
+        .filtro-container::-webkit-scrollbar { display: none; }
+        
+        .btn-filtro {
+            background: none; border: 2px solid var(--verde-fuerte); color: var(--verde-fuerte);
+            padding: 6px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s;
+            flex-shrink: 0; font-size: 0.9rem;
+        }
+        .btn-filtro.activo, .btn-filtro:hover { background: var(--verde-fuerte); color: white; }
+
+        /* GRID Y TARJETAS FLOTANTES */
+        .menu-grid {
+            display: flex; flex-direction: column; gap: 20px; 
+            padding: 20px 15px; 
+            max-width: 500px; margin: 0 auto;
+        }
+
+        .tarjeta {
+            background: white; 
+            border-radius: 16px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08); 
+            display: flex; flex-direction: column; 
+            border: none; 
+            overflow: hidden; 
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .tarjeta:hover {
+            transform: translateY(-3px); 
+            box-shadow: 0 12px 25px rgba(0,0,0,0.12);
+        }
+        
+        .contenedor-imagen { position: relative; width: 100%; height: 280px; cursor: pointer; overflow: hidden; background-color: #e0e0e0; }
+        .img-platillo { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease, filter 0.3s ease; }
+        .contenedor-imagen:hover .img-platillo { filter: brightness(85%); transform: scale(1.05); }
+        .etiqueta-info {
+            position: absolute; bottom: 10px; right: 10px; background: rgba(0, 0, 0, 0.75); color: white;
+            padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;
+            pointer-events: none; backdrop-filter: blur(4px); box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .info-platillo { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
+        .header-platillo { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
+        .header-platillo h3 { color: var(--verde-oscuro); font-size: 1.2rem; } 
+        .precio { background: var(--verde-acento); color: white; padding: 5px 10px; border-radius: 6px; font-weight: bold; font-size: 1rem; }
+        .precio-desde { font-size: 0.75rem; color: #666; display: block; text-align: right; margin-top: 2px; }
+        .descripcion { color: #555; font-size: 0.9rem; line-height: 1.4; margin-bottom: 15px; flex-grow: 1; }
+
+        .btn-agregar {
+            width: 100%; background-color: var(--verde-fuerte); color: white; border: none;
+            padding: 10px; border-radius: 8px; font-size: 1rem; font-weight: bold; 
+            cursor: pointer; transition: 0.3s; margin-top: auto;
+        }
+        .btn-agregar:hover { background-color: var(--verde-oscuro); }
+
+        /* BOTONES FLOTANTES */
+        .btn-flotante-wa {
+            position: fixed; bottom: 15px; right: 15px; background-color: var(--whatsapp); color: white;
+            border: none; padding: 12px 20px; border-radius: 50px; font-size: 1rem; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); cursor: pointer; display: none; z-index: 1000; transition: 0.3s;
+        }
+        .btn-flotante-wa:hover { transform: scale(1.05); }
+        .contador-wa { background: white; color: var(--whatsapp); padding: 2px 6px; border-radius: 50%; margin-left: 6px; font-size: 0.9rem; }
+
+        .btn-flotante-ubicacion {
+            position: fixed; bottom: 75px; right: 15px; background-color: var(--azul-mapa); color: white;
+            border: none; padding: 12px 20px; border-radius: 50px; font-size: 1rem; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); cursor: pointer; z-index: 999; transition: 0.3s;
+        }
+        .btn-flotante-ubicacion:hover { transform: scale(1.05); background-color: #0056b3; }
+
+        /* MODALES */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: flex-end; }
+        .modal-content { background: white; border-radius: 15px 15px 0 0; width: 100%; max-width: 500px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); animation: subir 0.3s ease; }
+        
+        @keyframes subir { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .modal-header { background: var(--verde-oscuro); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 1.15rem; }
+        .btn-cerrar { background: none; border: none; color: white; font-size: 1.3rem; cursor: pointer; }
+        .modal-body { padding: 15px; overflow-y: auto; }
+        .modal-footer { padding: 15px; background: white; border-top: 1px solid var(--gris-claro); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        
+        .seccion-ingredientes h4 { color: var(--verde-fuerte); border-bottom: 2px solid var(--gris-claro); padding-bottom: 4px; margin-bottom: 8px; font-size: 1rem; }
+        .item-ingrediente { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap; gap: 6px; }
+        .item-ingrediente label { display: flex; align-items: center; gap: 10px; cursor: pointer; flex-grow: 1; font-size: 0.95rem; }
+        .item-ingrediente input[type="checkbox"], .item-ingrediente input[type="radio"] { width: 18px; height: 18px; accent-color: var(--verde-fuerte); } 
+        .precio-extra { color: var(--verde-acento); font-weight: bold; font-size: 0.85rem; white-space: nowrap; }
+        .select-opciones { padding: 6px; border-radius: 6px; border: 1px solid #ccc; background: #f9f9f9; color: var(--texto-oscuro); font-size: 0.9rem; flex-grow: 1; min-width: 100px; }
+        .select-opciones:disabled { background: #eee; color: #999; border-color: #ddd; }
+
+        .total-modal { font-size: 1.15rem; font-weight: bold; color: var(--verde-oscuro); }
+        .btn-confirmar { background: var(--verde-fuerte); color: white; border: none; padding: 12px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; }
+        .btn-mitad { width: auto; }
+
+        .resumen-pedido { margin-bottom: 15px; border-bottom: 2px solid var(--gris-claro); padding-bottom: 10px; }
+        .item-carrito { display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #eee; }
+        .item-carrito-info { flex-grow: 1; }
+        .item-carrito-nombre { font-weight: bold; color: var(--verde-oscuro); font-size: 1rem; }
+        .item-carrito-detalles { font-size: 0.8rem; color: #666; margin-top: 4px; line-height: 1.3; }
+        .item-carrito-precio { font-weight: bold; margin: 0 8px; color: var(--verde-fuerte); font-size: 1rem; }
+        .btn-eliminar { background: var(--rojo-alerta); color: white; border: none; width: 25px; height: 25px; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; justify-content: center; align-items: center; transition: 0.3s; font-size: 1rem; }
+
+        .btn-ubicacion { background: white; border: 2px solid var(--azul-mapa); color: var(--azul-mapa); padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 8px; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 6px; font-size: 0.95rem; }
+        .btn-ubicacion:hover { background: #e6f2ff; }
+        
+        #info-tienda { display: block; background: #e8f5e9; padding: 12px; border-radius: 8px; border: 1px solid var(--verde-acento); margin-bottom: 12px; }
+        #info-tienda p { margin-bottom: 8px; color: var(--verde-oscuro); font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-contenido">
+            <div class="logos-container">
+                <img src="img/jicamaslogo.png" alt="Logo Principal" class="logo-tienda">
+            </div>
+            
+            <div class="texto-header">
+                <h1>Jicamas de Leon | San Pedro</h1>
+                <p>¡La mezcla perfecta para tu antojo!</p>
+                <p class="horario-header">🕒 Horario: Jueves a Martes de 12:30 PM - 7:30 PM</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="filtro-container">
+        <button class="btn-filtro activo" onclick="filtrar('todos')">Todos</button>
+         <button class="btn-filtro" onclick="filtrar('mes')">Recomendado</button>
+        <button class="btn-filtro" onclick="filtrar('especialidad')">Especialidades</button>
+        <button class="btn-filtro" onclick="filtrar('light')">Clasicos</button>
+         
+    </div>
+
+    <main class="menu-grid" id="menu-container"></main>
+
+    <button class="btn-flotante-ubicacion" onclick="verUbicacionNegocio()">
+        📍 Ubicación
+    </button>
+
+    <button class="btn-flotante-wa" id="btn-wa" onclick="abrirModalCheckout()">
+        🛒 Finalizar Pedido <span class="contador-wa" id="contador">0</span>
+    </button>
+
+    <div class="modal-overlay" id="modal-info">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="info-titulo">Nombre Platillo</h2>
+                <button class="btn-cerrar" onclick="cerrarModal('modal-info')">✖</button>
+            </div>
+            <div class="modal-body">
+                <img id="info-imagen" src="" alt="Platillo" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; background-color: #e0e0e0;">
+                <p id="info-descripcion" style="color: #555; line-height: 1.4; margin-bottom: 12px; font-size: 0.95rem;"></p>
+                <h4 style="color: var(--verde-fuerte); border-bottom: 2px solid var(--gris-claro); padding-bottom: 4px; margin-bottom: 8px; font-size: 1rem;">Ingredientes que incluye la base:</h4>
+                <ul id="info-ingredientes" style="list-style-position: inside; color: #444; line-height: 1.6; margin-bottom: 8px; padding-left: 10px; font-size: 0.95rem;"></ul>
+            </div>
+            <div class="modal-footer" style="justify-content: center;">
+                <button class="btn-confirmar" id="btn-info-personalizar">Personalizar y Agregar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-personalizacion">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-titulo">Nombre Platillo</h2>
+                <button class="btn-cerrar" onclick="cerrarModal('modal-personalizacion')">✖</button>
+            </div>
+            <div class="modal-body">
+                <div class="seccion-ingredientes" style="margin-bottom: 20px;">
+                    <h4>1. Elige el Tamaño</h4>
+                    <div id="lista-tamanos"></div>
+                </div>
+                <div class="seccion-ingredientes" style="margin-bottom: 20px;">
+                    <h4>2. Ingredientes Base (Quita los que no desees)</h4>
+                    <div id="lista-base"></div>
+                </div>
+                <div class="seccion-ingredientes">
+                    <h4>3. Extras (Costo adicional)</h4>
+                    <div id="lista-extras"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span class="total-modal">Total: $<span id="modal-precio-total">0</span></span>
+                <button class="btn-confirmar btn-mitad" onclick="confirmarPlatillo()">Agregar al carrito</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-checkout">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Tu Pedido</h2>
+                <button class="btn-cerrar" onclick="cerrarModal('modal-checkout')">✖</button>
+            </div>
+            <div class="modal-body">
+                <div class="resumen-pedido">
+                    <h4 style="color: var(--verde-fuerte); margin-bottom: 8px;">Artículos:</h4>
+                    <div id="lista-carrito-visual"></div>
+                </div>
+                
+                <p style="margin-bottom: 12px; color: #555; font-weight: bold; font-size: 0.95rem;">Tu pedido será preparado para recoger en sucursal:</p>
+                
+                <div id="info-tienda">
+                    <p>📍 <strong>Nuestra dirección:</strong> <span id="display-direccion-negocio"></span></p>
+                    <button type="button" class="btn-ubicacion" style="margin-bottom:0;" onclick="verUbicacionNegocio()">
+                        🗺️ Ver mapa y cómo llegar
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-confirmar" style="background-color: var(--whatsapp);" onclick="enviarPedidoWhatsApp()">Enviar pedido por WhatsApp</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const miNumeroWhatsApp = "524771766886"; 
+        
+        const LATITUD_NEGOCIO = 21.098111904816403;   
+        const LONGITUD_NEGOCIO = -101.64690931149246; 
+        
+        const DIRECCION_NEGOCIO_TEXTO = "Blvd. San Pedro 522, San Isidro, 37685 León de los Aldama, Gto."; 
+        document.getElementById('display-direccion-negocio').innerText = DIRECCION_NEGOCIO_TEXTO;
+
+        const platillos = [
+            
+        {
+                id: 1, 
+                nombre: "Bomba",
+                descripcion: "Disfruta de una mezcla de jícama pepino piña picado limón sal chile cebolla vinagre y queso al gusto .",
+                precios: {  "Chica":35,"Mediana (Medio)": 45, "Grande (Litro)": 80 },
+                categoria: "light",
+                imagen: "img/bom.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino", "Piña","Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                     {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+           {
+                id: 2, 
+                nombre: "Collague con Papas",
+                descripcion: "Disfruta de una mezcla de jícama pepino piña picado en charola con chips o papas de su elección limón sal chile cebolla vinagre y queso al gusto.",
+                precios: { "Chico": 60, "Grande": 80 },
+                categoria: "light",
+                imagen: "img/collapa.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino", "Piña","Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                    { nombre: "Papas", opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                    {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+            {
+                id: 3, 
+                nombre: "Delicioso",
+                descripcion: "Disfruta de una mezcla de jícama y pepino picado con jitomate cilantro clamato (cacahuate camarón seco) cebolla salsa limón sal chile vinagre y queso al gusto.",
+                precios: { "Mediano (Medio)": 75, "Grande (Litro)": 105 },
+                categoria: "especialidad",
+                imagen: "img/deli.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino", "Piña","Jitomate","Cebolla","Cilantro", "Clamato", "Jugo Maggie", "Sal de Ajo", "Polvo de Camaron","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso","Camarones",
+                   { nombre: "Cacahuates", opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                      {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+            {
+                id: 4, 
+                nombre: "Mexicano",
+                descripcion: "Disfruta de una mezcla de Jícama y pepino picado con jitomate cilantro clamato (papas y Cueritos) cebolla sal chile salsa limón vinagre y queso al gusto.",
+                precios: { "Mediano (Medio)": 75, "Grande (Litro)": 105 },
+                categoria: "especialidad",
+                imagen: "img/deli.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino", "Piña","Jitomate","Cebolla","Cilantro", "Clamato", "Jugo Maggie", "Sal de Ajo", "Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso","Cueritos",
+                   { nombre: "Papas",  opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                      {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+             {
+                id: 5, 
+                nombre: "Mar Y Tierra",
+                descripcion: "Disfruta de una mezcla de Jícama y pepino picado con jitomate cilantro clamato (cuerito y camarones seco) cebolla sal salsa chile limones vinagre y queso al gusto.",
+               precios: { "Mediano (Medio)": 75, "Grande (Litro)": 105 },
+                categoria: "especialidad",
+                imagen: "img/mar.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino", "Piña","Jitomate","Cebolla","Cilantro", "Clamato", "Jugo Maggie", "Polvo de camaron", "Sal de Ajo", "Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso","Camarones","Cueritos",
+                   
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                     {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+            {
+                id: 6, 
+                nombre: "Sushi",
+                descripcion: "Disfruta de Láminas delgadas de jícama rellenas de queso (piña, camaron seco, SABRITAS o BARCEL) pepino cebolla sal limón vinagre chile y queso al gusto.",
+                precios: { "Tamaño Único": 85 },
+                categoria: "especialidad",
+                imagen: "img/sushi.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino",,"Limon","Sal","Chile Picoso","Chile no Picoso","Queso","Salsas de la Casa",
+                    
+                    { nombre: "Relleno",  opciones: ["Piña","Camaron seco", "Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados",] },
+
+                   
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                     {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+            {
+                id: 7, 
+                nombre: "Dedos Arabes",
+                descripcion: "Disfruta de Láminas delgadas de jícama rellenas de Jicama pepino piña y queso cebolla sal limón vinagre chile queso al gusto y papas a elegir (SABRITAS O BARCEL).",
+                precios: { "Tamaño Único": 75 },
+                categoria: "especialidad",
+                imagen: "img/dedos.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino", "Piña","Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Queso",
+                    
+                   
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                   {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+            {
+                id: 8, 
+                nombre: "Termo Especial",
+                descripcion: "Disfruta de una mezcla de jícama y pepino picado con jitomate, cilantro, clamato (papas, cacahuates, camarones y Cueritos), cebolla, salsa, limón, sal, chile, vinagre y queso al gusto.",
+                precios: { "Tamaño Único": 115 },
+                categoria: "mes",
+                imagen: "img/termo.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino","Jitomate","Cebolla","Cilantro", "Clamato", "Jugo Maggie", "Sal de Ajo", "Polvo de Camaron","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso","Camarones","Cueritos",
+                    { nombre: "Papas", opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                   
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                      {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+            {
+                id: 9, 
+                nombre: "Sopes",
+                descripcion: "Disfruta de Rebanadas pequeñas de jícama con pepino rallado con papas de su elección (SABRITAS O BARCEL) cebolla sal limón vinagre chile y queso al gusto.",
+                precios: { "Tamaño Único": 80},
+                categoria: "especialidad",
+                imagen: "img/sope.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino","Cebolla","Salsa de botella","Limon","Sal","Chile Picoso","Chile no Picoso","Queso",
+                    { nombre: "Papas", opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                   
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                     {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+           
+            {
+                id: 11, 
+                nombre: "Caldo de Oso",
+                descripcion: "Disfruta de una mezcla vinagre limon sal chile cebolla y queso al gusto.",
+                precios: { "Chico":35,"Mediano (Medio)": 45, "Grande (Litro)": 80 },
+                categoria: "light",
+                imagen: "img/caldo.png", 
+                ingredientesBase: [
+                    "Vinagre","Sal","Limon","Cebolla","Chile Picoso","Chile no Picoso","Queso",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                      {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+            {
+                id: 12, 
+                nombre: "Chalupa",
+                descripcion: "Disfruta de Un pepino partido a la mitad con cebolla sal limón vinagre chile y queso al gusto .",
+                precios: { "Tamaño Único": 35 },
+                categoria: "light",
+                imagen: "img/chalu.png", 
+                ingredientesBase: [
+                    "Pepino","Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                     {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+            {
+                id: 13, 
+                nombre: "Rebanada",
+                descripcion: "Disfruta de Una rebanada de jícama con cebolla sal limón vinagre chile y queso al gusto.",
+                precios: { "Tamaño Único": 35 },
+                categoria: "light",
+                imagen: "img/reba.png", 
+                ingredientesBase: [
+                    "Jicama","Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                    {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+            {
+                id: 14, 
+                nombre: "MEGA Sandwich",
+                descripcion: "Disfruta de 3 rebanadas de Jicama rellenas de pepino y Jicama rallada entre cada una cebolla sal limón vinagre chile y queso al gusto.",
+                precios: { "Tamaño Único": 75 },
+                categoria: "light",
+                imagen: "img/club.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino","Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                     {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+            {
+                id: 15, 
+                nombre: "Sandwich Hawaiano",
+                descripcion: "Disfruta de Dos rebanadas de Jicama y una de piña en medio cebolla sal limón vinagre chile y queso al gusto.",
+                precios: { "Tamaño Único": 55 },
+                categoria: "light",
+                imagen: "img/clubha.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino", "Piña","Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                     {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+            
+
+           {
+                id: 17, 
+                nombre: "Pico de gallo",
+                descripcion: "Disfruta de una mezcla Jícama pepino y piña partido en trozos medianos con cebolla sal limón vinagre chile y queso al gusto.",
+                precios: { "Chica": 35, "mediano":55,"Grande": 60 },
+                categoria: "light",
+                imagen: "img/pico.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino", "Piña","Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                    
+                ],
+               ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                    {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+            {
+                id: 18, 
+                nombre: "Partida",
+                descripcion: "Disfruta de Trozos gruesos de jícama con cebolla sal limón vinagre chile y queso al gusto .",
+                precios: { "Tamaño Unico": 70 },
+                categoria: "light",
+                imagen: "img/parti.png", 
+                ingredientesBase: [
+                    "Jicama","Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                    {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                ]
+            },
+
+            {
+                id: 19, 
+                nombre: "Jungla",
+                descripcion: "Disfruta de Trozos gruesos de Jicama con pepino rallado encima y cebolla sal limón vinagre chile y queso al gusto.",
+                precios: { "Tamaño Unico": 75 },
+                categoria: "light",
+                imagen: "img/desco2.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino","Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                      {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+            {
+                id: 20, 
+                nombre: "Cohete",
+                descripcion: "Disfruta de Medio pepino con palitos de jícama al centro con cebolla sal limón vinagre chile y queso al gusto.",
+                precios: { "Tamaño Único": 35},
+                categoria: "light",
+                imagen: "img/cohe.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                   {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                ]
+            },
+
+           {
+                id: 21, 
+                nombre: "Flor",
+                descripcion: "Disfruta de Un pepino partido en forma de flor con sal chile y limón al gusto .",
+                precios: { "Tamaño Único": 35},
+                categoria: "light",
+                imagen: "img/flor.png", 
+                ingredientesBase: [
+                 "Pepino","Limon","Sal","Chile Picoso","Chile no Picoso",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                     {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+             {
+                id: 22, 
+                nombre: "Sandwich",
+                descripcion: "Disfruta de Dos rebanadas de Jicama com relleno de pepino y piña picado en medio cebolla sal limón vinagre chile y queso al gusto.",
+                precios: { "Tamaño Único": 50},
+                categoria: "light",
+                imagen: "img/sand.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino","piña","Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                     {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+             {
+                id: 23, 
+                nombre: "MIX",
+                descripcion: "Disfruta de Trozo de jícama pepino y piña con pepino y jícama rallado encima con cebolla sal limón vinagre chile y queso al gusto.",
+                precios: { "Tamaño Unico": 75 },
+                categoria: "light",
+                imagen: "img/mix.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino","Piña", "Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                    {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                ]
+            },
+
+             {
+                id: 24, 
+                nombre: "Preparado para Michelada (No incluye cerveza)",
+                descripcion: "Disfruta de una mezcla de Clamato sal limón salsas negras chile hielo un toque de vinagre de la casa salsa y una rodaja de pepino.",
+                precios: { "Mediano (Medio)": 25, "Grande (Litro)": 40,},
+                categoria: "especialidad",
+                imagen: "img/prepa.png", 
+                ingredientesBase: [
+                    "Clamato","Jugo Maggie","Salsa inglesa", "Salsa de botella","Tajin","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Rodaja de pepino",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                   {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                ]
+            },
+
+ {
+                id: 25, 
+                nombre: "Araña",
+                descripcion: "Disfruta de Un pepino partido a la mitad con jícama rallada encima con cebolla sal limón vinagre chile y queso al gusto.",
+                precios: { "Tamaño Único": 55},
+                categoria: "light",
+                imagen: "img/chalu.png", 
+                ingredientesBase: [
+                     "Pepino","Jicama","Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                    {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+ {
+                id: 26, 
+                nombre: "Club Sandwich",
+                descripcion: "Disfruta de 3 rebanadas de Jicama rellenas de piña y pepino picado entre cada una con cebolla sal limón vinagre chile y queso al gusto.",
+                precios: { "Tamaño Único": 55},
+                categoria: "light",
+                imagen: "img/club.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino","Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                    {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+             {
+                id: 27, 
+                nombre: "Vaso Raro",
+                descripcion: "Disfruta de una mezcla Jícama y pepino rallado con salsa cacahuates y papas de su elección Chile limón cebolla sal vinagre y queso al gusto.",
+                precios: { "Mediano (Medio)": 85, "Grande (Litro)": 105,},
+                categoria: "especialidad",
+                imagen: "img/vasor.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino","Salsa de botella","Cebolla fileteada", "Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                { nombre: "Papas",  opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates",  opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                   {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+            {
+                id: 28, 
+                nombre: "Espaguetti con Papas",
+                descripcion: "Disfruta de una mezcla fresca de Jicama y/o pepino rallado con cebolla sal limón vinagre chile papas (SABRITAS O BARCEL) y queso al gusto.",
+                precios: { "Chica": 60, "Mediano":80,"Grande": 95 },
+                categoria: "light",
+                imagen: "img/esp.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino","Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+                    { nombre: "Papas", opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                    {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+             {
+                id: 29, 
+                nombre: "Cacahuates al gusto",
+                descripcion: "Disfruta de unos Cacahuates de tu elección preparados con cebolla sal limón vinagre salsa chile y queso al gusto.",
+                precios: { "Tamaño Único": 50},
+                categoria: "light",
+                imagen: "img/cacah.png", 
+                ingredientesBase: [
+                    { nombre: "Cacahuates",  opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    "Cebolla","Limon","Sal","Chile Picoso","Chile no Picoso","Salsa de botella","Vinagre","Queso",
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                   {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                ]
+            },
+
+            {
+                id: 30, 
+                nombre: "Papas Locas",
+                descripcion: "Disfruta de unas papas de tu eleccion cubiertas de Jícama y pepino rallado Limón sal cebolla salsa chile vinagre y queso al gusto .",
+                precios: { "Tamaño Único": 75},
+                categoria: "especialidad",
+                imagen: "img/papa.png", 
+                ingredientesBase: [
+                   { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    "Jicama","Pepino","Cebolla fileteada","Limon","Sal","Chile Picoso","Chile no Picoso","Salsa de botella","Vinagre","Queso",
+                    
+                ],
+               ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                      {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+            {
+                id: 31, 
+                nombre: "Vaso Loco",
+                descripcion: "Disfruta de una mezcla de Jícama y pepino rallado con cacahuates de tu elección Chile limón cebolla sal vinagre y queso al gusto.",
+                precios: { "Mediano": 75, "Grande": 95,},
+                categoria: "especialidad",
+                imagen: "img/vasol.png", 
+                ingredientesBase: [
+                    "Jicama", "Pepino","Salsa de botella","Cebolla fileteada", "Limon","Sal","Chile Picoso","Chile no Picoso","Vinagre","Queso",
+ { nombre: "Cacahuates",  opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    
+                ],
+                ingredientesExtra: [
+                     { nombre: "Papas", precio: 25, opciones: ["Tostachos","Chips Jalapeño (Verdes)", "Takis Fuego"," Chips Fuego (Moradas)", "Chips Toreadas" ,"Chips de Sal (Amarillas)", "Adobadas","Doritos Nacho (Rojos)","Doritos Incognita (Negros)","Doritos Flaming Hot (Morados)","Rufles de Queso (Verdes)","Tostitos Verdes","Tostitos Morados", ] },
+                    { nombre: "Cacahuates", precio: 25, opciones: ["HotNuts", "HotNuts Fuego", "Japones","Salados","Enchilados","Incognita", ] },
+                    { nombre: "Camaron seco", precio: 20 },
+                    { nombre: "Cueritos", precio: 10 },
+                    {nombre: "Queso Extra +5",precio: 5},
+                    {nombre: "Queso Extra +10",precio: 10},
+                    {nombre: "Queso Extra +20",precio: 20},
+                    
+                ]
+            },
+
+        ]
+
+        let pedido = []; 
+        let platilloActivoEnModal = null; 
+
+        const container = document.getElementById('menu-container');
+
+        function verUbicacionNegocio() {
+            const url = `https://www.google.com/maps/search/?api=1&query=${LATITUD_NEGOCIO},${LONGITUD_NEGOCIO}`;
+            window.open(url, '_blank');
+        }
+
+        function mostrarMenu(lista) {
+            container.innerHTML = '';
+            lista.forEach(p => {
+                const precioMinimo = Math.min(...Object.values(p.precios));
+                const card = `
+                    <div class="tarjeta">
+                        <div class="contenedor-imagen" onclick="abrirModalInfo(${p.id})" title="Ver detalles del platillo">
+                            <img src="${p.imagen}" alt="${p.nombre}" class="img-platillo" onerror="this.src='https://via.placeholder.com/600x400?text=Agrega+tu+foto+en+la+carpeta+img'">
+                            <span class="etiqueta-info">👆 Detalles</span>
+                        </div>
+                        <div class="info-platillo">
+                            <div class="header-platillo">
+                                <h3>${p.nombre}</h3>
+                                <div><span class="precio">$${precioMinimo}</span><span class="precio-desde">Desde</span></div>
+                            </div>
+                            <p class="descripcion">${p.descripcion.substring(0, 65)}...</p>
+                            <button class="btn-agregar" onclick="abrirModalPersonalizacion(${p.id})">Personalizar y Agregar</button>
+                        </div>
+                    </div>`;
+                container.innerHTML += card;
+            });
+        }
+
+        function filtrar(cat) {
+            document.querySelectorAll('.btn-filtro').forEach(btn => btn.classList.remove('activo'));
+            event.target.classList.add('activo');
+            if(cat === 'todos') mostrarMenu(platillos);
+            else mostrarMenu(platillos.filter(p => p.categoria === cat));
+        }
+
+        function cerrarModal(idModal) { document.getElementById(idModal).style.display = 'none'; }
+
+        function abrirModalInfo(id) {
+            const platillo = platillos.find(p => p.id === id);
+            document.getElementById('info-titulo').innerText = platillo.nombre;
+            const imgElement = document.getElementById('info-imagen');
+            imgElement.src = platillo.imagen;
+            imgElement.onerror = function() { this.src = 'https://via.placeholder.com/600x400?text=Agrega+tu+foto+en+la+carpeta+img'; };
+            document.getElementById('info-descripcion').innerText = platillo.descripcion;
+
+            const listaInfo = document.getElementById('info-ingredientes');
+            listaInfo.innerHTML = '';
+            platillo.ingredientesBase.forEach(ing => {
+                const nombreIngrediente = typeof ing === 'string' ? ing : ing.nombre;
+                listaInfo.innerHTML += `<li>${nombreIngrediente}</li>`;
+            });
+
+            document.getElementById('btn-info-personalizar').onclick = function() {
+                cerrarModal('modal-info');
+                abrirModalPersonalizacion(id);
+            };
+            document.getElementById('modal-info').style.display = 'flex';
+        }
+
+        function toggleSelectSabor(checkbox, selectId) {
+            const selectElement = document.getElementById(selectId);
+            if(selectElement) selectElement.disabled = !checkbox.checked;
+        }
+
+        function abrirModalPersonalizacion(id) {
+            platilloActivoEnModal = platillos.find(p => p.id === id);
+            document.getElementById('modal-titulo').innerText = platilloActivoEnModal.nombre;
+            
+            const listaTamanos = document.getElementById('lista-tamanos');
+            listaTamanos.innerHTML = '';
+            
+            let esPrimerTamano = true;
+            for (const [tamano, precio] of Object.entries(platilloActivoEnModal.precios)) {
+                const isChecked = esPrimerTamano ? "checked" : "";
+                esPrimerTamano = false;
+                
+                listaTamanos.innerHTML += `
+                    <div class="item-ingrediente">
+                        <label>
+                            <input type="radio" name="tamano-seleccionado" class="radio-tamano" value="${tamano}" data-precio="${precio}" onchange="recalcularTotal()" ${isChecked}>
+                            ${tamano}
+                        </label>
+                        <span class="precio-extra">$${precio}</span>
+                    </div>`;
+            }
+
+            const listaBase = document.getElementById('lista-base');
+            listaBase.innerHTML = '';
+            platilloActivoEnModal.ingredientesBase.forEach((ing, index) => {
+                let nombreIng = typeof ing === 'string' ? ing : ing.nombre;
+                let descuento = (nombreIng.includes('Papas') || nombreIng.includes('Cacahuates')) ? 25 : 0;
+                let textoDescuento = descuento > 0 ? `<small style="color: var(--rojo-alerta); font-weight: bold; margin-left: 5px;">(-$${descuento})</small>` : '';
+
+                if (typeof ing === 'string') {
+                    listaBase.innerHTML += `
+                        <div class="item-ingrediente">
+                            <label>
+                                <input type="checkbox" class="check-base" value="${ing}" data-descuento="${descuento}" checked onchange="recalcularTotal()"> 
+                                ${ing} ${textoDescuento}
+                            </label>
+                        </div>`;
+                } else {
+                    const selectId = `base-opt-${index}`;
+                    const opcionesHtml = ing.opciones.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                    listaBase.innerHTML += `
+                        <div class="item-ingrediente">
+                            <label style="flex-grow:0;">
+                                <input type="checkbox" class="check-base" value="${ing.nombre}" data-descuento="${descuento}" data-has-options="true" data-select-id="${selectId}" checked onchange="toggleSelectSabor(this, '${selectId}'); recalcularTotal();"> 
+                                ${ing.nombre} ${textoDescuento}
+                            </label>
+                            <select id="${selectId}" class="select-opciones">${opcionesHtml}</select>
+                        </div>`;
+                }
+            });
+
+            const listaExtras = document.getElementById('lista-extras');
+            listaExtras.innerHTML = '';
+            platilloActivoEnModal.ingredientesExtra.forEach((ext, index) => {
+                if (!ext.opciones) {
+                    listaExtras.innerHTML += `<div class="item-ingrediente"><label><input type="checkbox" class="check-extra" value="${ext.nombre}" data-precio="${ext.precio}" onchange="recalcularTotal()"> ${ext.nombre}</label><span class="precio-extra">+$${ext.precio}</span></div>`;
+                } else {
+                    const selectId = `extra-opt-${index}`;
+                    const opcionesHtml = ext.opciones.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                    listaExtras.innerHTML += `
+                        <div class="item-ingrediente">
+                            <label style="flex-grow:0;">
+                                <input type="checkbox" class="check-extra" value="${ext.nombre}" data-precio="${ext.precio}" data-has-options="true" data-select-id="${selectId}" onchange="recalcularTotal(); toggleSelectSabor(this, '${selectId}')"> 
+                                ${ext.nombre}
+                            </label>
+                            <select id="${selectId}" class="select-opciones" disabled>${opcionesHtml}</select>
+                            <span class="precio-extra" style="width:100%; text-align:left; padding-left:30px;">+$${ext.precio}</span>
+                        </div>`;
+                }
+            });
+
+            recalcularTotal();
+            document.getElementById('modal-personalizacion').style.display = 'flex';
+        }
+
+        function recalcularTotal() {
+            const tamanoSeleccionado = document.querySelector('.radio-tamano:checked');
+            let total = tamanoSeleccionado ? parseFloat(tamanoSeleccionado.getAttribute('data-precio')) : 0;
+            
+            document.querySelectorAll('.check-extra:checked').forEach(checkbox => { 
+                total += parseFloat(checkbox.getAttribute('data-precio')); 
+            });
+
+            document.querySelectorAll('.check-base:not(:checked)').forEach(checkbox => {
+                total -= parseFloat(checkbox.getAttribute('data-descuento')) || 0;
+            });
+
+            if (total < 0) total = 0;
+
+            document.getElementById('modal-precio-total').innerText = total;
+        }
+
+        function confirmarPlatillo() {
+            const tamanoSeleccionado = document.querySelector('.radio-tamano:checked').value;
+            const baseQuitados = [];
+            const baseElegidos = [];
+            
+            document.querySelectorAll('.check-base').forEach(cb => {
+                const nombre = cb.value;
+                if (!cb.checked) {
+                    baseQuitados.push(nombre);
+                } else if (cb.hasAttribute('data-has-options')) {
+                    const selectId = cb.getAttribute('data-select-id');
+                    const sabor = document.getElementById(selectId).value;
+                    baseElegidos.push(`${nombre} (${sabor})`);
+                }
+            });
+
+            const extrasAgregados = [];
+            document.querySelectorAll('.check-extra:checked').forEach(cb => {
+                let nombre = cb.value;
+                if (cb.hasAttribute('data-has-options')) {
+                    const selectId = cb.getAttribute('data-select-id');
+                    const sabor = document.getElementById(selectId).value;
+                    nombre += ` (${sabor})`;
+                }
+                extrasAgregados.push(nombre);
+            });
+
+            const precioCalculado = parseFloat(document.getElementById('modal-precio-total').innerText);
+
+            pedido.push({ 
+                nombre: platilloActivoEnModal.nombre, tamano: tamanoSeleccionado, precioFinal: precioCalculado, 
+                sin: baseQuitados, saboresBase: baseElegidos, extras: extrasAgregados 
+            });
+            
+            actualizarBotonFlotante();
+            cerrarModal('modal-personalizacion');
+        }
+
+        function actualizarBotonFlotante() {
+            document.getElementById('contador').innerText = pedido.length;
+            document.getElementById('btn-wa').style.display = pedido.length > 0 ? 'block' : 'none';
+        }
+
+        function renderizarCarrito() {
+            const contenedorCarrito = document.getElementById('lista-carrito-visual');
+            contenedorCarrito.innerHTML = '';
+            if (pedido.length === 0) { cerrarModal('modal-checkout'); actualizarBotonFlotante(); return; }
+
+            pedido.forEach((item, index) => {
+                let detallesHTML = `📏 Tamaño: ${item.tamano}<br>`;
+                if(item.saboresBase.length > 0) detallesHTML += `✔️ Base: ${item.saboresBase.join(', ')}<br>`;
+                if(item.sin.length > 0) detallesHTML += `❌ Sin: ${item.sin.join(', ')}<br>`;
+                if(item.extras.length > 0) detallesHTML += `➕ Extras: ${item.extras.join(', ')}`;
+
+                contenedorCarrito.innerHTML += `
+                    <div class="item-carrito">
+                        <div class="item-carrito-info">
+                            <div class="item-carrito-nombre">${item.nombre}</div>
+                            <div class="item-carrito-detalles">${detallesHTML}</div>
+                        </div>
+                        <div class="item-carrito-precio">$${item.precioFinal}</div>
+                        <button class="btn-eliminar" onclick="eliminarDelCarrito(${index})">✖</button>
+                    </div>`;
+            });
+        }
+
+        function eliminarDelCarrito(index) { pedido.splice(index, 1); actualizarBotonFlotante(); renderizarCarrito(); }
+        
+        function abrirModalCheckout() { 
+            if(pedido.length === 0) return; 
+            renderizarCarrito(); 
+            document.getElementById('modal-checkout').style.display = 'flex'; 
+        }
+
+        function enviarPedidoWhatsApp() {
+            let mensaje = "Hola! 👋 Me gustaría ordenar lo siguiente:\n\n";
+            let totalPedido = 0;
+
+            pedido.forEach((item) => {
+                mensaje += `🥗 *${item.nombre}* (${item.tamano}) - $${item.precioFinal}\n`;
+                if(item.saboresBase.length > 0) mensaje += `   ✔️ Base: ${item.saboresBase.join(', ')}\n`;
+                if(item.sin.length > 0) mensaje += `   ❌ Sin: ${item.sin.join(', ')}\n`;
+                if(item.extras.length > 0) mensaje += `   ➕ Extras: ${item.extras.join(', ')}\n`;
+                mensaje += `\n`;
+                totalPedido += item.precioFinal;
+            });
+
+            mensaje += `-------------------------------\n`;
+            mensaje += `🏪 *Entrega:* Pasar a recoger en tienda\n`;
+            mensaje += `-------------------------------\n`;
+            mensaje += `*TOTAL A PAGAR: $${totalPedido}*\n\n`;
+            mensaje += "Quedo a la espera para confirmar mi orden. ¡Gracias!";
+
+            const textoCodificado = encodeURIComponent(mensaje);
+            window.open(`https://wa.me/${miNumeroWhatsApp}?text=${textoCodificado}`, '_blank');
+            
+            pedido = [];
+            actualizarBotonFlotante();
+            cerrarModal('modal-checkout');
+        }
+
+        mostrarMenu(platillos);
+    </script>
+</body>
+</html>
