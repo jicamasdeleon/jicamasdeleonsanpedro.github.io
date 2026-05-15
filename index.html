@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menú Digital - Jicamas de Leon | San Pedro</title>
+    <link rel="preload" as="image" href="img/jicamaslogo.png">
     <style>
         :root {
             --verde-oscuro: #6aa824;
@@ -78,6 +79,8 @@
         }
 
         .tarjeta {
+            content-visibility: auto;
+            contain-intrinsic-size: 520px;
             background: white; 
             border-radius: 16px; 
             box-shadow: 0 8px 20px rgba(0,0,0,0.08); 
@@ -93,7 +96,7 @@
         }
 
         .contenedor-imagen { position: relative; width: 100%; height: 280px; cursor: pointer; overflow: hidden; background-color: #e0e0e0; }
-        .img-platillo { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease, filter 0.3s ease; }
+        .img-platillo { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease, filter 0.3s ease; background: #e0e0e0; }
         .contenedor-imagen:hover .img-platillo { filter: brightness(85%); transform: scale(1.05); }
         .etiqueta-info {
             position: absolute; bottom: 10px; right: 10px; background: rgba(0, 0, 0, 0.75); color: white;
@@ -305,8 +308,9 @@
         const DIRECCION_NEGOCIO_TEXTO = "Blvd. San Pedro 522, San Isidro, 37685 León de los Aldama, Gto."; 
         document.getElementById('display-direccion-negocio').innerText = DIRECCION_NEGOCIO_TEXTO;
 
-        const COMPRA_MINIMA = 150;
+        const COMPRA_MINIMA = 80;
         const LIMITE_ENVIO_KM = 0.5;
+        const IMAGEN_PLACEHOLDER = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="600" height="400" fill="#e0e0e0"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="24" fill="#555">Agrega tu foto en la carpeta img</text></svg>`);
 
         document.getElementById('display-minima').innerText = COMPRA_MINIMA;
         document.getElementById('display-limite').innerText = LIMITE_ENVIO_KM;
@@ -382,7 +386,7 @@
             },
             {
                 id: 6, 
-                nombre: "Sushi con papas",
+                nombre: "Sushi",
                 descripcion: "Disfruta de Láminas delgadas de jícama rellenas de queso (piña, camaron seco, SABRITAS o BARCEL) pepino cebolla sal limón vinagre chile y queso al gusto.",
                 precios: { "Tamaño Único": 85 },
                 categoria: "especialidad",
@@ -632,14 +636,57 @@
             window.open(url, '_blank');
         }
 
+        function cargarImagenesVisibles() {
+            const imagenes = document.querySelectorAll('img.img-platillo[data-src]:not([data-observada])');
+
+            const cargar = (img) => {
+                if (!img.dataset.src) return;
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+                img.onload = () => {
+                    img.classList.add('cargada');
+                    const contenedor = img.closest('.contenedor-imagen');
+                    if (contenedor) contenedor.classList.add('imagen-lista');
+                };
+                img.onerror = function() {
+                    this.onerror = null;
+                    this.src = IMAGEN_PLACEHOLDER;
+                    this.classList.add('cargada');
+                    const contenedor = this.closest('.contenedor-imagen');
+                    if (contenedor) contenedor.classList.add('imagen-lista');
+                };
+            };
+
+            if (!('IntersectionObserver' in window)) {
+                imagenes.forEach(cargar);
+                return;
+            }
+
+            const observador = new IntersectionObserver((entradas, obs) => {
+                entradas.forEach(entrada => {
+                    if (entrada.isIntersecting) {
+                        cargar(entrada.target);
+                        obs.unobserve(entrada.target);
+                    }
+                });
+            }, { rootMargin: '220px 0px', threshold: 0.01 });
+
+            imagenes.forEach(img => {
+                img.setAttribute('data-observada', 'true');
+                observador.observe(img);
+            });
+        }
+
         function mostrarMenu(lista) {
-            container.innerHTML = '';
-            lista.forEach(p => {
+            container.innerHTML = lista.map((p, index) => {
                 const precioMinimo = Math.min(...Object.values(p.precios));
-                const card = `
+                const srcInicial = index === 0 ? p.imagen : IMAGEN_PLACEHOLDER;
+                const dataSrc = index === 0 ? '' : `data-src="${p.imagen}"`;
+                const claseInicial = index === 0 ? 'img-platillo cargada' : 'img-platillo';
+                return `
                     <div class="tarjeta">
-                        <div class="contenedor-imagen" onclick="abrirModalInfo(${p.id})" title="Ver detalles del platillo">
-                            <img src="${p.imagen}" alt="${p.nombre}" class="img-platillo" onerror="this.src='https://via.placeholder.com/600x400?text=Agrega+tu+foto+en+la+carpeta+img'">
+                        <div class="contenedor-imagen ${index === 0 ? 'imagen-lista' : ''}" onclick="abrirModalInfo(${p.id})" title="Ver detalles del platillo">
+                            <img src="${srcInicial}" ${dataSrc} alt="${p.nombre}" class="${claseInicial}" width="600" height="400" decoding="async" fetchpriority="${index === 0 ? 'high' : 'low'}" onerror="this.onerror=null;this.src=IMAGEN_PLACEHOLDER;this.classList.add('cargada');this.closest('.contenedor-imagen').classList.add('imagen-lista');">
                             <span class="etiqueta-info">👆 Detalles</span>
                         </div>
                         <div class="info-platillo">
@@ -651,8 +698,8 @@
                             <button class="btn-agregar" onclick="abrirModalPersonalizacion(${p.id})">Personalizar y Agregar</button>
                         </div>
                     </div>`;
-                container.innerHTML += card;
-            });
+            }).join('');
+            cargarImagenesVisibles();
         }
 
         function filtrar(cat, boton) {
@@ -669,7 +716,7 @@
             document.getElementById('info-titulo').innerText = platillo.nombre;
             const imgElement = document.getElementById('info-imagen');
             imgElement.src = platillo.imagen;
-            imgElement.onerror = function() { this.src = 'https://via.placeholder.com/600x400?text=Agrega+tu+foto+en+la+carpeta+img'; };
+            imgElement.onerror = function() { this.onerror = null; this.src = IMAGEN_PLACEHOLDER; };
             document.getElementById('info-descripcion').innerText = platillo.descripcion;
 
             const listaInfo = document.getElementById('info-ingredientes');
